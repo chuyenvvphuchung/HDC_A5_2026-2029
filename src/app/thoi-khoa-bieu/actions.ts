@@ -172,21 +172,49 @@ export async function resetWeeklySchedule(weekStartDate: string) {
 export async function getSubjects() {
   const supabase = await createClient()
   const { data } = await supabase.from('subjects').select('*').order('name')
+  
+  if (!data || data.length === 0) {
+    const defaultSubjects = [
+      { name: 'Toán học', abbreviation: 'Toán', teacher_name: 'Cô Mai', teacher_phone: '' },
+      { name: 'Toán học CĐ', abbreviation: 'Toán CĐ', teacher_name: 'Cô Mai', teacher_phone: '' },
+      { name: 'Ngữ văn', abbreviation: 'Văn', teacher_name: 'Cô Hoa', teacher_phone: '' },
+      { name: 'Ngữ văn CĐ', abbreviation: 'Văn CĐ', teacher_name: 'Cô Hoa', teacher_phone: '' },
+      { name: 'Tiếng Anh', abbreviation: 'Anh', teacher_name: 'Cô Hương', teacher_phone: '' },
+      { name: 'Vật lý', abbreviation: 'Lý', teacher_name: 'Cô Huệ', teacher_phone: '' },
+      { name: 'Vật lý CĐ', abbreviation: 'Lý CĐ', teacher_name: 'Cô Huệ', teacher_phone: '' },
+      { name: 'Lịch sử', abbreviation: 'Sử', teacher_name: 'Cô An', teacher_phone: '' },
+      { name: 'Địa lý', abbreviation: 'Địa', teacher_name: 'Thầy Chiến', teacher_phone: '' },
+      { name: 'Giáo dục KTPL', abbreviation: 'GDKTPL', teacher_name: 'Cô Chung', teacher_phone: '' },
+      { name: 'Giáo dục Thể chất', abbreviation: 'GDTC', teacher_name: 'Thầy Đức', teacher_phone: '' },
+      { name: 'Giáo dục Quốc phòng', abbreviation: 'GDQP', teacher_name: 'Cô Vân', teacher_phone: '' },
+      { name: 'Giáo dục Địa phương', abbreviation: 'GDĐP', teacher_name: 'Cô Nhung', teacher_phone: '' },
+      { name: 'Công nghệ Nông nghiệp', abbreviation: 'CNNN', teacher_name: 'Cô Nguyệt', teacher_phone: '' },
+      { name: 'Sinh hoạt lớp', abbreviation: 'SHL', teacher_name: 'HĐTN2', teacher_phone: '' },
+      { name: 'Chào cờ', abbreviation: 'Chào cờ', teacher_name: 'HĐTN1', teacher_phone: '' }
+    ]
+    await supabase.from('subjects').insert(defaultSubjects)
+    const { data: newData } = await supabase.from('subjects').select('*').order('name')
+    return newData || []
+  }
+
   return data || []
 }
 
 export async function saveSubject(id: string | null, payload: any) {
   const supabase = await createClient()
   if (id) {
-    await supabase.from('subjects').update(payload).eq('id', id)
+    const { error } = await supabase.from('subjects').update(payload).eq('id', id)
+    if (error) throw new Error(error.message)
   } else {
-    await supabase.from('subjects').insert(payload)
+    const { error } = await supabase.from('subjects').insert(payload)
+    if (error) throw new Error(error.message)
   }
   revalidatePath('/thoi-khoa-bieu')
 }
 
 export async function deleteSubject(id: string) {
   const supabase = await createClient()
-  await supabase.from('subjects').delete().eq('id', id)
+  const { error } = await supabase.from('subjects').delete().eq('id', id)
+  if (error) throw new Error(error.message)
   revalidatePath('/thoi-khoa-bieu')
 }
